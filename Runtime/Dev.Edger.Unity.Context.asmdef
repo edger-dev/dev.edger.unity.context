@@ -1,0 +1,16 @@
+{
+    "name": "Dev.Edger.Unity.Context",
+    "rootNamespace": "",
+    "references": [
+        "GUID:81015c0ced48ca34290d962c057190b3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

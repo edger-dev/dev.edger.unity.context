@@ -1,0 +1,11 @@
+{
+    "name": "dev.edger.unity.context",
+    "displayName": "Dev.Edger.Unity.Context",
+    "version": "0.1.0",
+    "unity": "2020.3",
+    "description": "TODO",
+    "category": "Tools",
+    "dependencies": {
+        "dev.edger.unity.utils": "0.1.0"
+    }
+}
