@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
-namespace Edger.Unity.Context {
+namespace Edger.Unity.Weak {
     public abstract class BlockMono : BaseMono, IBlockOwner {
         private BlockOwner _BlockOwner = null;
 
