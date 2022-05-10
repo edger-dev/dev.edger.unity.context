@@ -5,17 +5,7 @@ using Edger.Unity;
 using Edger.Unity.Weak;
 
 namespace Edger.Unity.Context {
-    public abstract class BaseAspect : BaseMono, IBlockOwner {
-        private Env _Env = null;
-        public Env Env {
-            get {
-                if (_Env == null) {
-                    _Env = gameObject.GetOrAddComponent<Env>();
-                }
-                return _Env;
-            }
-        }
-
+    public abstract class Aspect : BaseMono, IBlockOwner {
         private BlockOwner _BlockOwner = null;
 
         public void AddBlock(WeakBlock block) {
@@ -30,12 +20,6 @@ namespace Edger.Unity.Context {
                 return;
             }
             _BlockOwner.RemoveBlock(block);
-        }
-    }
-
-    public abstract class Aspect : BaseAspect {
-        protected override void OnAwake() {
-            Env.AddAspect(this);
         }
     }
 }

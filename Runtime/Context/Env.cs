@@ -38,7 +38,7 @@ namespace Edger.Unity.Context {
             return null;
         }
 
-        public bool AddAspect(Aspect aspect) {
+        private bool AddAspect(Aspect aspect) {
             if (aspect == null) return false;
 
             var old = GetAspect(aspect.GetType());
