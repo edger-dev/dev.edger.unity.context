@@ -5,7 +5,7 @@ using Edger.Unity;
 using Edger.Unity.Weak;
 
 namespace Edger.Unity.Context {
-    public class Env : BaseMono {
+    public class Env : BlockMono {
         private Dictionary<Type, Aspect> _Aspects = null;
 
         public void ReloadAspects() {
