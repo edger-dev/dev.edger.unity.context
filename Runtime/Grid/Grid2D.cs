@@ -133,6 +133,7 @@ namespace Edger.Unity.Grid {
             if (index >= 0 && index < _Cache.Length) {
                 oldValue = _Cache[index];
                 _Cache[index] = val;
+                OnSet(row, col, val);
                 /*
                 if (_OnChanged != null) {
                     TEvt evt = CreateCacheChangedEvt(row, col, val, lastVal);
@@ -171,5 +172,7 @@ namespace Edger.Unity.Grid {
             }
             return false;
         }
+
+        protected virtual void OnSet(int row, int col, T val) {}
     }
 }
