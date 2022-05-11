@@ -80,7 +80,7 @@ namespace Edger.Unity.Grid {
             return row * Cols + col;
         }
 
-        public T Get(int row, int col) {
+        public T Get(int row, int col, bool isDebug = false) {
             if (_Cache == null) return default(T);
 
             T result = default(T);
@@ -88,7 +88,7 @@ namespace Edger.Unity.Grid {
             if (index >= 0 && index < _Cache.Length) {
                 result = _Cache[index];
             } else {
-                Error("Get Failed: [{0}] row = {1}, col = {2}", _Cache.Length, row, col);
+                ErrorOrDebug(isDebug, "Get Failed: [{0}] row = {1}, col = {2}", _Cache.Length, row, col);
             }
             return result;
         }
@@ -119,18 +119,19 @@ namespace Edger.Unity.Grid {
             if (_Cache != null) {
                 int row, col;
                 if (GetRowCol(pos, out row, out col, isDebug)) {
-                    result = Get(row, col);
+                    result = Get(row, col, isDebug);
                 }
             }
             return result;
         }
 
-        public bool Set(int row, int col, T val) {
+        public bool Set(int row, int col, T val, out T oldValue) {
+            oldValue = default(T);
             if (_Cache == null) return false;
 
             int index = GetIndex(row, col);
             if (index >= 0 && index < _Cache.Length) {
-                T lastVal = _Cache[index];
+                oldValue = _Cache[index];
                 _Cache[index] = val;
                 /*
                 if (_OnChanged != null) {
@@ -147,11 +148,26 @@ namespace Edger.Unity.Grid {
             return false;
         }
 
+        public bool Set(int row, int col, T val) {
+            T oldValue;
+            return Set(row, col, val, out oldValue);
+        }
+
         public bool Set(Vector2 pos, T val) {
             if (_Cache == null) return false;
             int row, col;
             if (GetRowCol(pos, out row, out col)) {
                 return Set(row, col, val);
+            }
+            return false;
+        }
+
+        public bool Set(Vector2 pos, T val, out T oldValue) {
+            oldValue = default(T);
+            if (_Cache == null) return false;
+            int row, col;
+            if (GetRowCol(pos, out row, out col)) {
+                return Set(row, col, val, out oldValue);
             }
             return false;
         }
