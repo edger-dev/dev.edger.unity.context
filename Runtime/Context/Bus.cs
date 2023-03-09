@@ -74,20 +74,13 @@ namespace Edger.Unity.Context {
             }
         }
 
-        public BlockBusWatcher AddBusWatcher(IBlockOwner owner, Action<Bus, string> block) {
-            BlockBusWatcher result = new BlockBusWatcher(owner, block);
-            if (AddBusWatcher(result)) {
-                return result;
-            }
-            return null;
-        }
-
         public void AddSub(string msg, IBusSub sub) {
             TryAddMsg(msg);
             if (_MsgSubs == null) {
                 _MsgSubs = new WeakPubSub<string, IBusSub>();
             }
             _MsgSubs.AddSub(msg, sub);
+            AdvanceRevision();
         }
 
         public BlockBusSub AddSub(string msg, IBlockOwner owner, Action<Bus, string> block) {
@@ -99,6 +92,7 @@ namespace Edger.Unity.Context {
         public void RemoveSub(string msg, IBusSub sub) {
             if (_MsgSubs != null) {
                 _MsgSubs.RemoveSub(msg, sub);
+                AdvanceRevision();
             }
         }
 
@@ -133,6 +127,7 @@ namespace Edger.Unity.Context {
                 return false;
             }
             _MsgCounts[msg] = GetMsgCount(msg) + 1;
+            AdvanceRevision();
 
             if (_MsgSubs != null) {
                 _MsgSubs.Publish(msg, (IBusSub sub) => {
@@ -160,6 +155,7 @@ namespace Edger.Unity.Context {
                 return false;
             }
             _MsgCounts[msg] = 0;
+            AdvanceRevision();
             return true;
         }
 
@@ -213,12 +209,16 @@ namespace Edger.Unity.Context {
             get { return WeakListUtil.Count(_BusWatchers); }
         }
 
-        public bool AddBusWatcher(IBusWatcher listener) {
-            return WeakListUtil.Add(ref _BusWatchers, listener);
+        public bool AddBusWatcher(IBusWatcher watcher) {
+            return WeakListUtil.Add(ref _BusWatchers, watcher);
         }
 
-        public bool RemoveBusWatcher(IBusWatcher listener) {
-            return WeakListUtil.Remove(_BusWatchers, listener);
+        public bool RemoveBusWatcher(IBusWatcher watcher) {
+            return WeakListUtil.Remove(_BusWatchers, watcher);
+        }
+
+        public void AddBusWatcher(IBlockOwner owner, Action<Bus, string> block) {
+            AddBusWatcher(new BlockBusWatcher(owner, block));
         }
     }
 }
