@@ -27,14 +27,17 @@ namespace Edger.Unity.Context {
         public bool IsReadOnly => ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).IsReadOnly;
 
         public void Add(TKey key, TValue value) {
+            AdvanceRevision();
             ((IDictionary<TKey, TValue>)_Elements).Add(key, value);
         }
 
         public void Add(KeyValuePair<TKey, TValue> item) {
+            AdvanceRevision();
             ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Add(item);
         }
 
         public void Clear() {
+            AdvanceRevision();
             ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Clear();
         }
 
@@ -47,6 +50,7 @@ namespace Edger.Unity.Context {
         }
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
+            AdvanceRevision();
             ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).CopyTo(array, arrayIndex);
         }
 
@@ -55,10 +59,12 @@ namespace Edger.Unity.Context {
         }
 
         public bool Remove(TKey key) {
+            AdvanceRevision();
             return ((IDictionary<TKey, TValue>)_Elements).Remove(key);
         }
 
         public bool Remove(KeyValuePair<TKey, TValue> item) {
+            AdvanceRevision();
             return ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Remove(item);
         }
 

@@ -23,10 +23,12 @@ namespace Edger.Unity.Context {
         public bool IsReadOnly => ((ICollection<T>)_Elements).IsReadOnly;
 
         public void Add(T item) {
+            AdvanceRevision();
             ((ICollection<T>)_Elements).Add(item);
         }
 
         public void Clear() {
+            AdvanceRevision();
             ((ICollection<T>)_Elements).Clear();
         }
 
@@ -35,6 +37,7 @@ namespace Edger.Unity.Context {
         }
 
         public void CopyTo(T[] array, int arrayIndex) {
+            AdvanceRevision();
             ((ICollection<T>)_Elements).CopyTo(array, arrayIndex);
         }
 
@@ -47,14 +50,17 @@ namespace Edger.Unity.Context {
         }
 
         public void Insert(int index, T item) {
+            AdvanceRevision();
             ((IList<T>)_Elements).Insert(index, item);
         }
 
         public bool Remove(T item) {
+            AdvanceRevision();
             return ((ICollection<T>)_Elements).Remove(item);
         }
 
         public void RemoveAt(int index) {
+            AdvanceRevision();
             ((IList<T>)_Elements).RemoveAt(index);
         }
 
