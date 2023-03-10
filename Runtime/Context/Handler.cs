@@ -7,6 +7,10 @@ using OneOf;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
     public enum StatusCode : int {
         Ok = 200,
@@ -70,6 +74,9 @@ namespace Edger.Unity.Context {
         public Type RequestType { get => typeof(TReq); }
         public Type ResponseType { get => typeof(TRes); }
 
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         public HandleLog<TReq, TRes> Last { get; private set; }
 
         public HandleLog<TReq, TRes> HandleRequest(TReq req) {
@@ -99,6 +106,9 @@ namespace Edger.Unity.Context {
             });
         }
 
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         private WeakList<IEventWatcher<HandleLog<TReq, TRes>>> _HandlerWatchers = null;
 
         public int ResponseWatcherCount {

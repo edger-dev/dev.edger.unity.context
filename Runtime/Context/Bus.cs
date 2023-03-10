@@ -6,100 +6,120 @@ using UnityEngine;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
-    public interface IBusWatcher : IBlock {
-        void OnBusMsg(Bus bus, string msg);
+    public interface IBusWatcher<TMsg> : IBlock {
+        void OnBusMsg(Aspect bus, TMsg msg);
     }
 
-    public sealed class BlockBusWatcher : WeakBlock, IBusWatcher {
-        private readonly Action<Bus, string> _Block;
+    public sealed class BlockBusWatcher<TMsg> : WeakBlock, IBusWatcher<TMsg> {
+        private readonly Action<Aspect, TMsg> _Block;
 
-        public BlockBusWatcher(IBlockOwner owner, Action<Bus, string> block) : base(owner) {
+        public BlockBusWatcher(IBlockOwner owner, Action<Aspect, TMsg> block) : base(owner) {
             _Block = block;
         }
 
-        public void OnBusMsg(Bus bus, string msg) {
+        public void OnBusMsg(Aspect bus, TMsg msg) {
             _Block(bus, msg);
         }
     }
 
-    public interface IBusSub {
-        void OnMsg(Bus bus, string msg);
+    public interface IBusSub<TMsg> {
+        void OnMsg(Aspect bus, TMsg msg);
     }
 
-    public sealed class BlockBusSub : WeakBlock, IBusSub {
-        private readonly Action<Bus, string> _Block;
+    public sealed class BlockBusSub<TMsg> : WeakBlock, IBusSub<TMsg> {
+        private readonly Action<Aspect, TMsg> _Block;
 
-        public BlockBusSub(IBlockOwner owner, Action<Bus, string> block) : base(owner) {
+        public BlockBusSub(IBlockOwner owner, Action<Aspect, TMsg> block) : base(owner) {
             _Block = block;
         }
 
-        public void OnMsg(Bus bus, string msg) {
+        public void OnMsg(Aspect bus, TMsg msg) {
             _Block(bus, msg);
         }
     }
 
-    [DisallowMultipleComponent()]
-    public class Bus : Aspect {
-        private List<string> _Msgs = null;
-        private WeakPubSub<string, IBusSub> _MsgSubs = null;
-        private Dictionary<string, object> _MsgTokens = null;
-        private Dictionary<string, int> _MsgCounts = null;
+    public class Bus<TMsg> : Aspect {
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
+        private List<TMsg> _Msgs = null;
 
-        public bool WaitMsg(string msg, Action<Bus, string, bool> callback) {
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
+        private WeakPubSub<TMsg, IBusSub<TMsg>> _MsgSubs = null;
+
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
+        private Dictionary<TMsg, object> _MsgTokens = null;
+
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
+        private Dictionary<TMsg, int> _MsgCounts = null;
+
+        public bool WaitMsg(TMsg msg, Action<Aspect, TMsg, bool> callback) {
             if (GetMsgCount(msg) > 0) {
                 callback(this, msg, false);
                 return false;
             }
             bool called = false;
-            BlockBusSub sub = new BlockBusSub(this, (Bus _bus, string _msg) => {
+            BlockBusSub<TMsg> sub = new BlockBusSub<TMsg>(this, (Aspect _bus, TMsg _msg) => {
                 if (!called) {
                     called = true;
                     callback(this, msg, true);
                 }
             });
             AddSub(msg, sub);
-            AddSub(msg, this, (Bus _bus, string _msg) => {
+            AddSub(msg, this, (Aspect _bus, TMsg _msg) => {
                 _MsgSubs.RemoveSub(msg, sub);
             });
             return true;
         }
 
-        private void TryAddMsg(string msg) {
+        private void TryAddMsg(TMsg msg) {
             if (_Msgs == null) {
-                _Msgs = new List<string>();
+                _Msgs = new List<TMsg>();
             }
             if (!_Msgs.Contains(msg)) {
                 _Msgs.Add(msg);
             }
         }
 
-        public void AddSub(string msg, IBusSub sub) {
+        public void AddSub(TMsg msg, IBusSub<TMsg> sub) {
             TryAddMsg(msg);
             if (_MsgSubs == null) {
-                _MsgSubs = new WeakPubSub<string, IBusSub>();
+                _MsgSubs = new WeakPubSub<TMsg, IBusSub<TMsg>>();
             }
             _MsgSubs.AddSub(msg, sub);
             AdvanceRevision();
         }
 
-        public BlockBusSub AddSub(string msg, IBlockOwner owner, Action<Bus, string> block) {
-            BlockBusSub result = new BlockBusSub(owner, block);
+        public BlockBusSub<TMsg> AddSub(TMsg msg, IBlockOwner owner, Action<Aspect, TMsg> block) {
+            BlockBusSub<TMsg> result = new BlockBusSub<TMsg>(owner, block);
             AddSub(msg, result);
             return result;
         }
 
-        public void RemoveSub(string msg, IBusSub sub) {
+        public void RemoveSub(TMsg msg, IBusSub<TMsg> sub) {
             if (_MsgSubs != null) {
                 _MsgSubs.RemoveSub(msg, sub);
                 AdvanceRevision();
             }
         }
 
-        private bool CheckToken(string msg, object token) {
+        private bool CheckToken(TMsg msg, object token) {
             if (_MsgTokens == null) {
-                _MsgTokens = new Dictionary<string, object>();
-                _MsgCounts = new Dictionary<string, int>();
+                if (token == null) {
+                    return true;
+                }
+                _MsgTokens = new Dictionary<TMsg, object>();
             }
             object oldToken;
             if (_MsgTokens.TryGetValue(msg, out oldToken)) {
@@ -107,13 +127,13 @@ namespace Edger.Unity.Context {
                     Error("Invalid Token: {0}: {1} -> {2}", msg, oldToken, token);
                     return false;
                 }
-            } else {
+            } else if (token != null) {
                 _MsgTokens[msg] = token;
             }
             return true;
         }
 
-        public bool PublishOnce(string msg, object token, bool isDebug = false) {
+        public bool PublishOnce(TMsg msg, object token = null, bool isDebug = false) {
             if (IsMsgExist(msg)) {
                 ErrorOrDebug(isDebug, "Already Published: {0}", msg);
                 return false;
@@ -121,36 +141,39 @@ namespace Edger.Unity.Context {
             return Publish(msg, token);
         }
 
-        public bool Publish(string msg, object token) {
+        public bool Publish(TMsg msg, object token = null) {
             TryAddMsg(msg);
             if (!CheckToken(msg, token)) {
                 return false;
+            }
+            if (_MsgCounts == null) {
+                _MsgCounts = new Dictionary<TMsg, int>();
             }
             _MsgCounts[msg] = GetMsgCount(msg) + 1;
             AdvanceRevision();
 
             if (_MsgSubs != null) {
-                _MsgSubs.Publish(msg, (IBusSub sub) => {
+                _MsgSubs.Publish(msg, (IBusSub<TMsg> sub) => {
                     sub.OnMsg(this, msg);
                 });
             }
 
-            NotifyBusWatchers(msg);
-
             if (LogDebug) {
-                Debug("Publish {0}: sub_count = {1}, msg_count = {2}",
-                        msg, GetSubCount(msg), GetMsgCount(msg));
+                Debug("Publish <{0}> {1}: sub_count = {2}, msg_count = {3}",
+                    typeof(TMsg).FullName, msg, GetSubCount(msg), GetMsgCount(msg));
             }
+
+            NotifyBusWatchers(msg);
             return true;
         }
 
-        private void NotifyBusWatchers(string msg) {
+        private void NotifyBusWatchers(TMsg msg) {
             WeakListUtil.ForEach(_BusWatchers, (watcher) => {
                 watcher.OnBusMsg(this, msg);
             });
         }
 
-        public bool Clear(string msg, object token) {
+        public bool Clear(TMsg msg, object token) {
             if (!CheckToken(msg, token)) {
                 return false;
             }
@@ -159,14 +182,14 @@ namespace Edger.Unity.Context {
             return true;
         }
 
-        public int GetSubCount(string msg) {
+        public int GetSubCount(TMsg msg) {
             if (_MsgSubs != null) {
                 return _MsgSubs.GetSubCount(msg);
             }
             return 0;
         }
 
-        public object GetMsgToken(string msg) {
+        public object GetMsgToken(TMsg msg) {
             if (_MsgTokens == null) return null;
 
             object token;
@@ -176,7 +199,7 @@ namespace Edger.Unity.Context {
             return null;
         }
 
-        public int GetMsgCount(string msg) {
+        public int GetMsgCount(TMsg msg) {
             if (_MsgCounts == null) return 0;
 
             int count;
@@ -186,15 +209,15 @@ namespace Edger.Unity.Context {
             return 0;
         }
 
-        public bool IsMsgExist(string msg) {
+        public bool IsMsgExist(TMsg msg) {
             return GetMsgCount(msg) > 0;
         }
 
-        public List<string> GetExistMsgs() {
-            List<string> result = new List<string>();
+        public List<TMsg> GetExistMsgs() {
+            List<TMsg> result = new List<TMsg>();
             if (_Msgs != null) {
                 for (int i = 0; i < _Msgs.Count; i++) {
-                    string msg = _Msgs[i];
+                    TMsg msg = _Msgs[i];
                     if (GetMsgCount(msg) > 0) {
                         result.Add(msg);
                     }
@@ -203,22 +226,25 @@ namespace Edger.Unity.Context {
             return result;
         }
 
-        private WeakList<IBusWatcher> _BusWatchers = null;
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
+        private WeakList<IBusWatcher<TMsg>> _BusWatchers = null;
 
         public int BusWatcherCount {
             get { return WeakListUtil.Count(_BusWatchers); }
         }
 
-        public bool AddBusWatcher(IBusWatcher watcher) {
+        public bool AddBusWatcher(IBusWatcher<TMsg> watcher) {
             return WeakListUtil.Add(ref _BusWatchers, watcher);
         }
 
-        public bool RemoveBusWatcher(IBusWatcher watcher) {
+        public bool RemoveBusWatcher(IBusWatcher<TMsg> watcher) {
             return WeakListUtil.Remove(_BusWatchers, watcher);
         }
 
-        public void AddBusWatcher(IBlockOwner owner, Action<Bus, string> block) {
-            AddBusWatcher(new BlockBusWatcher(owner, block));
+        public void AddBusWatcher(IBlockOwner owner, Action<Aspect, TMsg> block) {
+            AddBusWatcher(new BlockBusWatcher<TMsg>(owner, block));
         }
     }
 }

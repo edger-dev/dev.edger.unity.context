@@ -6,16 +6,24 @@ using UnityEngine;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
     [DisallowMultipleComponent()]
     public class Env : BlockMono {
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         private Dictionary<Type, Aspect> _Aspects = new Dictionary<Type, Aspect>();
+
         private Dictionary<Type, IAspectReference> _AspectCaches = new Dictionary<Type, IAspectReference>();
 
         public void ReloadAspects() {
             _Aspects.Clear();
             foreach (var cache in _AspectCaches.Values) {
-                cache.Clear();
+                cache._ClearReference();
             }
             Aspect[] aspects = gameObject.GetComponents<Aspect>();
             for (int i = 0; i < aspects.Length; i++) {
@@ -24,7 +32,7 @@ namespace Edger.Unity.Context {
 
                 IAspectReference cache;
                 if (_AspectCaches.TryGetValue(aspect.GetType(), out cache)) {
-                    cache.SetTarget(aspect);
+                    cache._SetTarget(aspect);
                 }
             }
             AdvanceRevision();

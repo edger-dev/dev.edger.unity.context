@@ -5,8 +5,15 @@ using System.Collections.Generic;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
     public abstract class ListAspect<T> : Aspect, IList<T> {
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         private List<T> _Elements = new List<T>();
 
         public T this[int index] { get => ((IList<T>)_Elements)[index]; set => ((IList<T>)_Elements)[index] = value; }

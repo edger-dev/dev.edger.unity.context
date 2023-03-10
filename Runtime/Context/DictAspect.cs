@@ -5,58 +5,65 @@ using System.Collections.Generic;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
-    public class DictAspect<T> : Aspect, IDictionary<string, T> {
-        private Dictionary<string, T> _Elements = new Dictionary<string, T>();
+    public class DictAspect<TKey, TValue> : Aspect, IDictionary<TKey, TValue> {
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
+        private Dictionary<TKey, TValue> _Elements = new Dictionary<TKey, TValue>();
 
-        public T this[string key] { get => ((IDictionary<string, T>)_Elements)[key]; set => ((IDictionary<string, T>)_Elements)[key] = value; }
+        public TValue this[TKey key] { get => ((IDictionary<TKey, TValue>)_Elements)[key]; set => ((IDictionary<TKey, TValue>)_Elements)[key] = value; }
 
-        public ICollection<string> Keys => ((IDictionary<string, T>)_Elements).Keys;
+        public ICollection<TKey> Keys => ((IDictionary<TKey, TValue>)_Elements).Keys;
 
-        public ICollection<T> Values => ((IDictionary<string, T>)_Elements).Values;
+        public ICollection<TValue> Values => ((IDictionary<TKey, TValue>)_Elements).Values;
 
-        public int Count => ((ICollection<KeyValuePair<string, T>>)_Elements).Count;
+        public int Count => ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Count;
 
-        public bool IsReadOnly => ((ICollection<KeyValuePair<string, T>>)_Elements).IsReadOnly;
+        public bool IsReadOnly => ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).IsReadOnly;
 
-        public void Add(string key, T value) {
-            ((IDictionary<string, T>)_Elements).Add(key, value);
+        public void Add(TKey key, TValue value) {
+            ((IDictionary<TKey, TValue>)_Elements).Add(key, value);
         }
 
-        public void Add(KeyValuePair<string, T> item) {
-            ((ICollection<KeyValuePair<string, T>>)_Elements).Add(item);
+        public void Add(KeyValuePair<TKey, TValue> item) {
+            ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Add(item);
         }
 
         public void Clear() {
-            ((ICollection<KeyValuePair<string, T>>)_Elements).Clear();
+            ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Clear();
         }
 
-        public bool Contains(KeyValuePair<string, T> item) {
-            return ((ICollection<KeyValuePair<string, T>>)_Elements).Contains(item);
+        public bool Contains(KeyValuePair<TKey, TValue> item) {
+            return ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Contains(item);
         }
 
-        public bool ContainsKey(string key) {
-            return ((IDictionary<string, T>)_Elements).ContainsKey(key);
+        public bool ContainsKey(TKey key) {
+            return ((IDictionary<TKey, TValue>)_Elements).ContainsKey(key);
         }
 
-        public void CopyTo(KeyValuePair<string, T>[] array, int arrayIndex) {
-            ((ICollection<KeyValuePair<string, T>>)_Elements).CopyTo(array, arrayIndex);
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
+            ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).CopyTo(array, arrayIndex);
         }
 
-        public IEnumerator<KeyValuePair<string, T>> GetEnumerator() {
-            return ((IEnumerable<KeyValuePair<string, T>>)_Elements).GetEnumerator();
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
+            return ((IEnumerable<KeyValuePair<TKey, TValue>>)_Elements).GetEnumerator();
         }
 
-        public bool Remove(string key) {
-            return ((IDictionary<string, T>)_Elements).Remove(key);
+        public bool Remove(TKey key) {
+            return ((IDictionary<TKey, TValue>)_Elements).Remove(key);
         }
 
-        public bool Remove(KeyValuePair<string, T> item) {
-            return ((ICollection<KeyValuePair<string, T>>)_Elements).Remove(item);
+        public bool Remove(KeyValuePair<TKey, TValue> item) {
+            return ((ICollection<KeyValuePair<TKey, TValue>>)_Elements).Remove(item);
         }
 
-        public bool TryGetValue(string key, out T value) {
-            return ((IDictionary<string, T>)_Elements).TryGetValue(key, out value);
+        public bool TryGetValue(TKey key, out TValue value) {
+            return ((IDictionary<TKey, TValue>)_Elements).TryGetValue(key, out value);
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

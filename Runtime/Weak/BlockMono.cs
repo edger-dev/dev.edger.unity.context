@@ -4,13 +4,21 @@ using System.Collections.Generic;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Weak {
     public abstract class BlockMono : BaseMono, IBlockOwner {
         private static int _NextIdentity = 0;
         private int _Identity = _NextIdentity++;
         public int Identity { get => _Identity; }
 
-        public int Revision { get; private set; } 
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly, PropertyOrder(int.MinValue)]
+        [Title("@string.Format(\"#{0:D5}\", $root._Identity)", bold: true, titleAlignment: TitleAlignments.Right)]
+#endif
+        public int Revision { get; private set; }
         protected void AdvanceRevision() {
             Revision += 1;
         }

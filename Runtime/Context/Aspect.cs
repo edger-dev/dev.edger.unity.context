@@ -31,8 +31,8 @@ namespace Edger.Unity.Context {
     }
 
     public interface IAspectReference {
-        public void Clear();
-        public bool SetTarget(object target);
+        public void _ClearReference();
+        public bool _SetTarget(object target);
     }
 
     public class AspectReference<T> : IAspectReference where T : Aspect {
@@ -42,11 +42,11 @@ namespace Edger.Unity.Context {
             Target = target;
         }
 
-        public void Clear() {
+        public void _ClearReference() {
             Target = null;
         }
 
-        public bool SetTarget(object _target) {
+        public bool _SetTarget(object _target) {
             T target = _target.As<T>();
             if (target != null) {
                 Target = target;

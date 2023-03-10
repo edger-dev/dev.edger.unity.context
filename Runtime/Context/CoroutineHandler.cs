@@ -7,8 +7,15 @@ using UnityEngine;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
     public abstract class CoroutineHandler<TReq, TRes> : Handler<TReq, TRes> {
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         public HandleLog<TReq, TRes> LastAsync { get; private set; }
 
         private Dictionary<int, IEnumerator> _RunningCoroutines = new Dictionary<int, IEnumerator>();
@@ -46,7 +53,7 @@ namespace Edger.Unity.Context {
             LastAsync = log;
             AdvanceRevision();
             if (!LastAsync.IsOk) {
-                Error("HandleRequestAsync Failed: {0}", Last);
+                Error("HandleRequestAsync Failed: {0}", LastAsync);
             } else if (LogDebug) {
                 Debug("HandleRequestAsync: {0}", LastAsync);
             }

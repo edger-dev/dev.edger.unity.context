@@ -6,6 +6,10 @@ using UnityEngine;
 using Edger.Unity;
 using Edger.Unity.Weak;
 
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
+
 namespace Edger.Unity.Context {
     public class EventLog<TEvt> : AspectLog {
         public readonly TEvt Event;
@@ -17,6 +21,9 @@ namespace Edger.Unity.Context {
     public abstract class Channel<TEvt> : Aspect {
         public Type EventType { get => typeof(TEvt); }
 
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         public EventLog<TEvt> Last { get; private set; }
 
         public void FireEvent(TEvt evt) {
@@ -34,6 +41,9 @@ namespace Edger.Unity.Context {
             });
         }
 
+#if ODIN_INSPECTOR
+        [ShowInInspector, ReadOnly]
+#endif
         private WeakList<IEventWatcher<EventLog<TEvt>>> _ChannelWatchers = null;
 
         public int EventWatcherCount {
