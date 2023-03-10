@@ -58,14 +58,8 @@ namespace Edger.Unity.Context {
 #endif
         public MessageLog<TMsg> Last { get; private set; }
 
-#if ODIN_INSPECTOR
-        [ShowInInspector, ReadOnly]
-#endif
         private List<TMsg> _Msgs = null;
 
-#if ODIN_INSPECTOR
-        [ShowInInspector, ReadOnly]
-#endif
         private WeakPubSub<TMsg, IBusSub<TMsg>> _MsgSubs = null;
 
 #if ODIN_INSPECTOR
